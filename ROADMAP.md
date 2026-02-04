@@ -2,13 +2,63 @@
 
 > **Vision**: The Stockfish of Warhammer — deterministic tactical engine  
 > **Status**: Pre-Alpha  
-> **Last Updated**: 2026-02-03
+> **Last Updated**: 2026-02-04
+
+---
+
+## 📅 6-Week Schedule (Feb 4 - Mar 17, 2026)
+
+> **GitHub Project**: https://github.com/orgs/vindicta-platform/projects/4  
+> **Master Roadmap**: https://github.com/vindicta-platform/.github/blob/master/ROADMAP.md
+
+### Week 1: Feb 4-10 — Heuristic Evaluation
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 4 | Define heuristic evaluation interface | P1 |
+| Tue 5 | Continue heuristic evaluation | P1 |
+| Wed 6 | Opening book database design | P1 |
+| Thu 7 | DuckDB setup for opening book | P1 |
+
+### Week 2: Feb 11-17 — State Encoding
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 11 | Opening book data population | P1 |
+| Tue 12 | Opening book data population | P1 |
+| Wed 13 | State encoding implementation | P1 |
+| Thu 14 | Evaluation functions | P1 |
+| **Sun 17** | **v0.1.0 Foundation Release** | ⭐ |
+
+### Week 3: Feb 18-24 — Opening Book
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 18 | Opening book database implementation | P1 |
+| Tue 19 | Faction analysis features | P1 |
+| Wed 20 | Recommendation API | P1 |
+| **Sun 24** | **v0.1.5 Opening Book Release** | ⭐ |
+
+### Week 4: Feb 25 - Mar 3 — MCTS Foundation
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 25 | MCTS foundation (part 1) | P1 |
+| Tue 26 | MCTS foundation (part 2) | P1 |
+| Wed 27 | Search depth implementation | P1 |
+| Thu 28 | Evaluation improvements | P1 |
+
+### Week 5: Mar 4-10 — MCTS Polish
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 4 | MCTS polish | P1 |
+| Tue 5 | Move depth 3+ | P1 |
+| Wed 6 | Performance optimization | P1 |
+| Thu 7 | Tests | P1 |
+| **Sun 10** | **v0.2.0 Search Engine Release** | ⭐ |
 
 ---
 
 ## v1.0 Target: June 2026
 
 ### Mission Statement
+
 Deliver a production-ready tactical AI engine that evaluates game positions, calculates optimal moves, and learns from WARScribe transcripts — becoming the "Stockfish" of Warhammer.
 
 ---
