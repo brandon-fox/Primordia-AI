@@ -7,6 +7,7 @@ determining which player has the advantage.
 
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
+import math
 
 from pydantic import BaseModel, Field
 
@@ -105,7 +106,6 @@ class HeuristicEvaluator:
         player_advantage = max(-1.0, min(1.0, player_advantage))
         
         # Win probability (sigmoid of advantage)
-        import math
         win_probability = 1 / (1 + math.exp(-player_advantage * 3))
         
         # Confidence based on game stage
