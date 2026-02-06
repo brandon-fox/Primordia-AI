@@ -1,0 +1,35 @@
+name: Auto-Merge PR
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  enable-auto-merge:
+    name: Enable Auto-Merge
+    # Only run on non-draft PRs
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          echo "Enabling auto-merge for PR: $PR_URL"
+          gh pr merge "$PR_URL" --auto --squash
+          
+      - name: Add comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 Auto-merge has been enabled. This PR will automatically merge when all required checks pass.'
+            })
