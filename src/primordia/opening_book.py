@@ -37,7 +37,7 @@ class HistoricalGame(BaseModel):
     id: str
     player1_faction: str
     player2_faction: str
-    winner: int  # 1 or 2
+    winner: int = Field(ge=1, le=2, description="Winner must be player 1 or 2")
     
     # Lists (simplified)
     player1_list_hash: str
@@ -45,6 +45,26 @@ class HistoricalGame(BaseModel):
     
     # Similarity to query
     similarity_score: float = 0.0
+
+
+class FactionStatistics(BaseModel):
+    """Aggregated statistics for a faction matchup."""
+    
+    player_faction: str
+    opponent_faction: str
+    
+    # Win rates
+    total_games: int = Field(ge=0)
+    wins: int = Field(ge=0)
+    losses: int = Field(ge=0)
+    win_rate: float = Field(ge=0.0, le=1.0)
+    
+    # Deployment patterns
+    most_common_deployment: Optional[str] = None
+    avg_deployment_confidence: float = Field(ge=0.0, le=1.0, default=0.5)
+    
+    # Last updated
+    last_game_indexed: Optional[str] = None  # ISO 8601 timestamp
 
 
 class OpeningBook:
