@@ -7,8 +7,11 @@ Provides storage for:
 - Win/loss statistics
 """
 
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, TYPE_CHECKING
+
+from pydantic import BaseModel, Field, field_validator, computed_field
 
 try:
     import duckdb
@@ -19,6 +22,70 @@ except ImportError:
 
 if TYPE_CHECKING:
     from primordia.models import GameState
+
+
+class HistoricalGameResult(BaseModel):
+    """A historical game result from the database.
+    
+    This model represents a single game record with full validation.
+    The winner field is constrained to be either 1 or 2.
+    """
+    
+    id: str
+    player1_faction: str
+    player2_faction: str
+    player1_list_hash: str
+    player2_list_hash: str
+    winner: int = Field(..., ge=1, le=2, description="Winner must be 1 or 2")
+    player1_vp: int = 0
+    player2_vp: int = 0
+    turn_count: int = 5
+    game_date: Optional[datetime] = None
+    source: str = "user"
+    
+    @field_validator("winner")
+    @classmethod
+    def validate_winner(cls, v: int) -> int:
+        """Ensure winner is exactly 1 or 2."""
+        if v not in (1, 2):
+            raise ValueError("winner must be 1 or 2")
+        return v
+    
+    @computed_field
+    @property
+    def player1_won(self) -> bool:
+        """Check if player 1 won the game."""
+        return self.winner == 1
+    
+    @computed_field
+    @property
+    def vp_differential(self) -> int:
+        """Calculate VP differential (positive = player 1 advantage)."""
+        return self.player1_vp - self.player2_vp
+
+
+class FactionStatistics(BaseModel):
+    """Aggregate statistics for a faction matchup.
+    
+    This model represents win/loss statistics for a specific
+    faction vs opponent combination.
+    """
+    
+    faction: str
+    opponent: str
+    games: int = 0
+    wins: int = 0
+    losses: int = 0
+    avg_vp_scored: float = 0.0
+    avg_vp_conceded: float = 0.0
+    
+    @computed_field
+    @property
+    def win_rate(self) -> float:
+        """Calculate win rate (0.0 to 1.0)."""
+        if self.games == 0:
+            return 0.0
+        return self.wins / self.games
 
 
 # Default database path
@@ -75,12 +142,7 @@ CREATE TABLE IF NOT EXISTS deployment_patterns (
     
     -- Statistics
     games_used INTEGER DEFAULT 0,
-    wins INTEGER DEFAULT 0,
-    
-    -- Computed win rate
-    win_rate FLOAT GENERATED ALWAYS AS (
-        CASE WHEN games_used > 0 THEN wins::FLOAT / games_used ELSE 0.0 END
-    ) STORED
+    wins INTEGER DEFAULT 0
 );
 
 -- Index for pattern lookup
@@ -141,8 +203,8 @@ class OpeningBookDB:
         # Connect (DuckDB is sync but we simulate async interface)
         self._conn = duckdb.connect(str(self.db_path))
         
-        # Create schema
-        self._conn.executemany(SCHEMA_SQL.split(";")[:-1])  # type: ignore
+        # Create schema (execute as a script)
+        self._conn.execute(SCHEMA_SQL)
     
     async def close(self) -> None:
         """Close database connection."""
@@ -182,8 +244,12 @@ class OpeningBookDB:
         player_faction: str,
         opponent_faction: str,
         limit: int = 10
-    ) -> list[dict]:
-        """Query historical games for a matchup."""
+    ) -> list[HistoricalGameResult]:
+        """Query historical games for a matchup.
+        
+        Returns:
+            List of HistoricalGameResult models with full validation.
+        """
         if not self._conn:
             raise RuntimeError("Database not connected")
         
@@ -195,14 +261,21 @@ class OpeningBookDB:
         """, [player_faction, opponent_faction, limit])
         
         columns = [desc[0] for desc in result.description]
-        return [dict(zip(columns, row)) for row in result.fetchall()]
+        return [
+            HistoricalGameResult(**dict(zip(columns, row)))
+            for row in result.fetchall()
+        ]
     
     async def get_matchup_stats(
         self,
         player_faction: str,
         opponent_faction: str
-    ) -> Optional[dict]:
-        """Get win/loss statistics for a matchup."""
+    ) -> Optional[FactionStatistics]:
+        """Get win/loss statistics for a matchup.
+        
+        Returns:
+            FactionStatistics model with computed win_rate, or None if not found.
+        """
         if not self._conn:
             raise RuntimeError("Database not connected")
         
@@ -214,7 +287,7 @@ class OpeningBookDB:
         row = result.fetchone()
         if row:
             columns = [desc[0] for desc in result.description]
-            return dict(zip(columns, row))
+            return FactionStatistics(**dict(zip(columns, row)))
         return None
     
     def __enter__(self) -> "OpeningBookDB":
