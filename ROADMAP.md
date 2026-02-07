@@ -12,12 +12,12 @@
 > **Master Roadmap**: https://github.com/vindicta-platform/.github/blob/master/ROADMAP.md
 
 ### Week 1: Feb 4-10 — Heuristic Evaluation
-| Day | Task | Priority | Status |
-|-----|------|----------|--------|
-| Mon 4 | Define heuristic evaluation interface | P1 | [/] |
-| Tue 5 | Continue heuristic evaluation | P1 | [/] |
-| Wed 6 | Opening book database design | P1 | [x] ✅ |
-| Thu 7 | DuckDB setup for opening book | P1 | [ ] |
+| Day | Task | Priority |
+|-----|------|----------|
+| Mon 4 | Define heuristic evaluation interface | P1 | [x] |
+| Tue 5 | Continue heuristic evaluation | P1 | [x] |
+| Wed 6 | Opening book database design | P1 | [x] |
+| Thu 7 | DuckDB setup for opening book | P1 |
 
 ### Week 2: Feb 11-17 — State Encoding
 | Day | Task | Priority |
@@ -105,7 +105,7 @@ Deliver a production-ready tactical AI engine that evaluates game positions, cal
 ## v0.1.5 — Opening Book Database (Target: Feb 24, 2026)
 
 ### Deliverables
-- [x] Define deployment recommendation schema ✅
+- [ ] Define deployment recommendation schema
 - [ ] Historical game storage (DuckDB)
 - [ ] Faction archetype matching
 - [ ] List similarity scoring
@@ -254,7 +254,7 @@ class OpeningBook:
 | Warhammer too complex | Medium | High | Start with simplified scenarios |
 | Insufficient training data | High | High | Prioritize WARScribe adoption |
 | Dice variance too high | Medium | Medium | Model distributions |
-| Community rejects AI play | Medium | Medium | Position as training tool |
+| Community rejects AI play | Medium | Medium | Position as tool |
 
 ---
 
