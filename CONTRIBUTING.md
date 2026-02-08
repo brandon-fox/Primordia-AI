@@ -1,26 +1,23 @@
 # Contributing to Primordia-AI
 
-This repository follows the organization-wide [Contributing Guidelines](https://github.com/vindicta-platform/.github/blob/main/CONTRIBUTING.md).
+Thank you for your interest in contributing!
 
-## 🔗 Pre-Commit Hooks (Required)
+## Cross-Cutting Decisions
 
-All developers **must** install and run pre-commit hooks before committing. This ensures:
-- All markdown links are validated
-- Code quality standards are enforced
+> **⚠️ Important:** All decisions that affect multiple repositories or have platform-wide implications **must** be recorded in [**Platform-Docs**](https://github.com/vindicta-platform/Platform-Docs) before implementation.
 
-### Setup
+This includes:
+- API contract changes
+- Shared schema modifications
+- Authentication/authorization changes
+- New inter-service dependencies
+- Platform-wide configuration changes
 
-1. Install pre-commit:
-   ```bash
-   uv pip install pre-commit
-   ```
+See the [Platform-Docs Contributing Guide](https://github.com/vindicta-platform/Platform-Docs/blob/main/CONTRIBUTING.md) for the full process.
 
-2. Install hooks in your local repo:
-   ```bash
-   pre-commit install
-   ```
+## Repo-Specific Guidelines
 
-3. Hooks run automatically on `git commit`. To run manually:
-   ```bash
-   pre-commit run --all-files
-   ```
+1. Follow existing code style and conventions
+2. Write tests for new functionality
+3. Keep PRs focused and atomic
+4. Reference related [Platform-Docs proposals](https://github.com/vindicta-platform/Platform-Docs/tree/main/docs/proposals) when applicable
