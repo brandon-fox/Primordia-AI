@@ -1,0 +1,1 @@
+﻿---`ndescription: Bug fix workflow for learning developers`n---`n1. Reproduce the bug with an automated test`n2. execute `/speckit.plan` for the fix`n3. execute `/speckit.tasks``n4. execute `/speckit.implement``n5. Verify fix and delete reproduction test if temporary

@@ -1,0 +1,1 @@
+﻿---`ndescription: Feature implementation from specification to PR`n---`n1. Read the feature specification in `.specify/specs/``n2. execute `/speckit.plan``n3. execute `/speckit.tasks``n4. execute `/speckit.implement`

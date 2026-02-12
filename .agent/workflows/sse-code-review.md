@@ -1,0 +1,1 @@
+﻿---`ndescription: Comprehensive code review with mentoring feedback`n---`n1. execute `git diff` against target branch`n2. Perform static analysis check`n3. Provide feedback on architecture, performance, and constitution compliance
