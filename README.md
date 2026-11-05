@@ -1,95 +1,55 @@
 # Primordia AI
 
-> **The Stockfish of Warhammer** — Deterministic tactical engine for optimal play and machine learning
+> **Status:** design study with a foundation module; implementation unscheduled. The game-state encoding, data models, opening-book store and a heuristic evaluator exist with tests (about 770 lines of typed Python, February 2026). Search, outcome prediction and the learning pipeline were designed but never built. Kept public as a record of how the system was thought through.
 
-[![Priority: #3](https://img.shields.io/badge/Priority-%233-orange)]()
-[![Status: Pre-Alpha](https://img.shields.io/badge/Status-Pre--Alpha-lightgrey)]()
+Primordia was designed as the tactical engine for the [Vindicta Platform](https://github.com/vindicta-platform): given a tabletop wargame state, evaluate who is winning, find the best move, and learn from recorded battles. The analogy that drove the design is a chess engine, with [WARScribe](https://github.com/vindicta-platform/specs/tree/main/015-warscribe-core-notation) transcripts as the game record.
 
-## Vision
-
-**Primordia AI** is a tactical engine that calculates optimal plays, predicts game outcomes, and learns from structured match data. It is the **primary consumer** of WARScribe transcripts.
-
-### Positioning
+## Positioning (as designed)
 
 | Aspect | Meta-Oracle | Primordia AI |
 |--------|-------------|--------------|
-| **Role** | Observer | Player |
-| **Focus** | Meta analysis | Tactical execution |
-| **Output** | Tier lists, upsets | Optimal moves, win probability |
-| **Analogy** | Sports commentator | Chess engine |
+| Role | Observer | Player |
+| Focus | Meta analysis | Tactical execution |
+| Output | Tier lists, upsets | Optimal moves, win probability |
+| Analogy | Sports commentator | Chess engine |
 
-> *"Meta-Oracle tells you what's strong in the meta. Primordia tells you the best move right now."*
+> "Meta-Oracle tells you what's strong in the meta. Primordia tells you the best move right now."
 
-## Core Capabilities
+## What exists
 
-1. **Position Evaluation** — Given a game state, calculate who's winning
-2. **Best Move Calculation** — Given a position, find the optimal play
-3. **Game Outcome Prediction** — Before/during a game, predict the winner
-4. **Opening Book Database** — Standard deployments for each faction matchup
-5. **Training Pipeline** — Learn from historical WARScribe transcripts
+| Module | Lines | What it does | Tests |
+| --- | --- | --- | --- |
+| `src/primordia/encoding.py` | 184 | Encodes a `GameState` into a fixed-width feature vector for evaluation and search. | `tests/test_encoding.py` |
+| `src/primordia/models.py` | 136 | Pydantic models for positions, moves and evaluations. | `tests/test_models.py` |
+| `src/primordia/database.py` | 226 | DuckDB-backed store for positions and opening-book entries. | `tests/test_database.py` |
+| `src/primordia/opening_book.py`, `opening_models.py` | 172 | Opening-book lookup and its models. | — |
+| `src/primordia/evaluation.py` | 42 | Heuristic position evaluation interface. | — |
 
-## Key Stakeholders
+## What was designed and not built
 
-| Stakeholder | Value |
-|-------------|-------|
-| **Competitive Players** | Calculate optimal plays during practice |
-| **Tournament Organizers** | Fair AI opponent for byes |
-| **Content Creators** | "AI Analysis" overlays for streams |
-| **Opening Book Users** | "Book" setups for each matchup |
-| **Meta-Oracle** | Game analysis feeds meta predictions |
+| Capability | Design | Status |
+| --- | --- | --- |
+| Position evaluation | [spec 001-foundation](specs/001-foundation/spec.md); [vindicta-platform/specs 045](https://github.com/vindicta-platform/specs/tree/main/045-positional-heuristics) | heuristic interface only |
+| Best-move search | Monte Carlo tree search over the rules engine; [vindicta-platform/specs 044](https://github.com/vindicta-platform/specs/tree/main/044-mcts-foundation); [ADR-0001](docs/adr/0001-mcts-for-best-move-search.md) | not started |
+| Roster synergy and outcome prediction | [vindicta-platform/specs 046](https://github.com/vindicta-platform/specs/tree/main/046-roster-synergy), [047](https://github.com/vindicta-platform/specs/tree/main/047-upset-detector) | not started |
+| Game database | DuckDB; [ADR-0002](docs/adr/0002-duckdb-for-the-game-database.md) | store implemented, no ingestion |
+| Rules boundary | WARScribe-Core as the only source of legal moves; [ADR-0003](docs/adr/0003-warscribe-core-as-the-rules-boundary.md) | boundary defined, engine incomplete |
 
-## Technology Stack
+The February 2026 six-week schedule in [`ROADMAP.md`](ROADMAP.md) is kept as a historical document; none of its milestones past the foundation shipped.
 
-- **Language**: Python (typed)
-- **ML Framework**: PyTorch or JAX
-- **Search**: Monte Carlo Tree Search (MCTS)
-- **Rules Engine**: WARScribe-Core
-- **Storage**: DuckDB for game database
-
-## Getting Started
+## Running what exists
 
 ```bash
-# Coming soon - Pre-alpha development
-pip install primordia-ai
-
-# Evaluate a position
-primordia eval game_state.json
-
-# Get best move
-primordia move game_state.json
+uv sync --extra dev
+uv run pytest
 ```
 
-## Dependencies
+There is no CLI and no package on PyPI.
 
-- **WARScribe-Core** — Structured game notation
-- **Agent-Auditor-SDK** — Token quota management
+## License and author
 
-## Roadmap
+MIT License, copyright Brandon Fox. See [`LICENSE`](LICENSE).
 
-See [ROADMAP.md](./ROADMAP.md) for detailed milestones.
+## Independence
 
-| Phase | Target | Status |
-|-------|--------|--------|
-| v0.1.0 | Foundation | 🔲 Planned |
-| v0.1.5 | Opening Book | 🔲 Planned |
-| v0.2.0 | Search Engine | 🔲 Planned |
-| v0.3.0 | Learning Pipeline | 🔲 Planned |
-| v1.0.0 | Production | 🔲 Planned |
-
-## Platform Documentation
-
-> **📌 Important:** All cross-cutting decisions, feature proposals, and platform-wide architecture documentation live in [**Platform-Docs**](https://github.com/vindicta-platform/Platform-Docs).
->
-> Any decision affecting multiple repos **must** be recorded there before implementation.
-
-- 📋 [Feature Proposals](https://github.com/vindicta-platform/Platform-Docs/tree/main/docs/proposals)
-- 🏗️ [Architecture Decisions](https://github.com/vindicta-platform/Platform-Docs/tree/main/docs)
-- 📖 [Contributing Guide](https://github.com/vindicta-platform/Platform-Docs/blob/main/CONTRIBUTING.md)
-
-## License
-
-MIT License
-
----
-
-*Part of the Vindicta Platform*
+This is a personal project by Brandon Fox, built on my own time and equipment. It is not affiliated with, endorsed by, or derived from the work of any employer, current or former, and does not represent their views, products or practices. Licensed under the MIT License; principles at [First-ADE/PRINCIPLES.md](https://github.com/First-ADE/.github/blob/main/PRINCIPLES.md).
