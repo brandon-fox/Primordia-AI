@@ -1,3 +1,5 @@
+> **Historical document.** This six-week schedule was written in February 2026. The foundation milestone shipped; nothing after it did. See the README for what exists.
+
 # Primordia AI Roadmap
 
 > **Vision**: The Stockfish of Warhammer — deterministic tactical engine  
