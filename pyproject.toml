@@ -3,6 +3,7 @@ name = "primordia"
 version = "0.1.0"
 description = "Add your description here"
 authors = [
+license = { text = "MIT" }
     { name = "Brandon Fox", email = "32090240+brandon-fox@users.noreply.github.com" }
 ]
 requires-python = ">=3.13"

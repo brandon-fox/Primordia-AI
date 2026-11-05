@@ -1,0 +1,20 @@
+name: ADE axioms
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  axioms:
+    name: First-ADE axiom validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: First-ADE/.github/.github/actions/ade-axioms@a69064ab297a7be00c1b42dc13e2b89c78921888 # PR #32; re-pin to main after merge
