@@ -7,27 +7,19 @@ Provides storage for:
 - Win/loss statistics
 """
 
-from datetime import datetime
 from pathlib import Path
-from typing import Optional, TYPE_CHECKING
+from typing import Self
 
 try:
     import duckdb
+
     HAS_DUCKDB = True
 except ImportError:
     HAS_DUCKDB = False
     duckdb = None  # type: ignore
 
 # Import Pydantic models
-from primordia.opening_models import (
-    HistoricalGameResult,
-    DeploymentPattern,
-    FactionStatistics
-)
-
-if TYPE_CHECKING:
-    from primordia.models import GameState
-
+from primordia.opening_models import FactionStatistics, HistoricalGameResult
 
 # Default database path
 DEFAULT_DB_PATH = Path.home() / ".primordia" / "opening_book.duckdb"
@@ -59,7 +51,7 @@ CREATE TABLE IF NOT EXISTS historical_games (
     source VARCHAR DEFAULT 'user',
     
     -- Score differential
-    score_differential INTEGER GENERATED ALWAYS AS (player1_vp - player2_vp) STORED
+    score_differential INTEGER GENERATED ALWAYS AS (player1_vp - player2_vp)
 );
 
 -- Index for faction matchup queries
@@ -91,7 +83,7 @@ CREATE TABLE IF NOT EXISTS deployment_patterns (
     -- Computed win rate
     win_rate FLOAT GENERATED ALWAYS AS (
         CASE WHEN games_used > 0 THEN wins::FLOAT / games_used ELSE 0.0 END
-    ) STORED,
+    ),
     
     -- Frequency
     frequency FLOAT DEFAULT 0.0
@@ -132,7 +124,7 @@ class OpeningBookDB:
         games = await db.query_matchup("Space Marines", "Orks")
     """
 
-    def __init__(self, db_path: Optional[Path] = None) -> None:
+    def __init__(self, db_path: Path | None = None) -> None:
         """
         Initialize the database.
 
@@ -140,14 +132,12 @@ class OpeningBookDB:
             db_path: Path to DuckDB file. Defaults to ~/.primordia/opening_book.duckdb
         """
         self.db_path = db_path or DEFAULT_DB_PATH
-        self._conn: Optional["duckdb.DuckDBPyConnection"] = None
+        self._conn: duckdb.DuckDBPyConnection | None = None
 
     async def connect(self) -> None:
         """Connect to database and ensure schema exists."""
         if not HAS_DUCKDB:
-            raise ImportError(
-                "DuckDB not installed. Install with: pip install duckdb"
-            )
+            raise ImportError("DuckDB not installed. Install with: pip install duckdb")
 
         # Ensure directory exists
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -156,7 +146,7 @@ class OpeningBookDB:
         self._conn = duckdb.connect(str(self.db_path))
 
         # Create schema
-        self._conn.executemany(SCHEMA_SQL.split(";")[:-1])  # type: ignore
+        self._conn.execute(SCHEMA_SQL)
 
     async def close(self) -> None:
         """Close database connection."""
@@ -174,39 +164,46 @@ class OpeningBookDB:
         winner: int,
         player1_vp: int = 0,
         player2_vp: int = 0,
-        turn_count: int = 5
+        turn_count: int = 5,
     ) -> None:
         """Index a completed game."""
         if not self._conn:
             raise RuntimeError("Database not connected")
 
-        self._conn.execute("""
+        self._conn.execute(
+            """
             INSERT OR REPLACE INTO historical_games 
             (id, player1_faction, player2_faction, player1_list_hash, 
              player2_list_hash, winner, player1_vp, player2_vp, turn_count)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, [
-            game_id, player1_faction, player2_faction,
-            player1_list_hash, player2_list_hash,
-            winner, player1_vp, player2_vp, turn_count
-        ])
+        """,
+            [
+                game_id,
+                player1_faction,
+                player2_faction,
+                player1_list_hash,
+                player2_list_hash,
+                winner,
+                player1_vp,
+                player2_vp,
+                turn_count,
+            ],
+        )
 
     async def query_matchup(
-        self,
-        player_faction: str,
-        opponent_faction: str,
-        limit: int = 10
+        self, player_faction: str, opponent_faction: str, limit: int = 10
     ) -> list[HistoricalGameResult]:
         """
         Query historical games for a matchup.
-        
+
         Returns:
             List of HistoricalGameResult Pydantic models.
         """
         if not self._conn:
             raise RuntimeError("Database not connected")
 
-        result = self._conn.execute("""
+        result = self._conn.execute(
+            """
             SELECT 
                 id AS game_id,
                 player1_faction,
@@ -219,39 +216,44 @@ class OpeningBookDB:
             WHERE player1_faction = ? AND player2_faction = ?
             ORDER BY game_date DESC
             LIMIT ?
-        """, [player_faction, opponent_faction, limit])
+        """,
+            [player_faction, opponent_faction, limit],
+        )
 
         games = []
         for row in result.fetchall():
-            games.append(HistoricalGameResult(
-                game_id=row[0],
-                player1_faction=row[1],
-                player2_faction=row[2],
-                winner=row[3],
-                score_differential=row[4],
-                turn_count=row[5],
-                date_played=row[6] if row[6] else None
-            ))
+            games.append(
+                HistoricalGameResult(
+                    game_id=row[0],
+                    player1_faction=row[1],
+                    player2_faction=row[2],
+                    winner=row[3],
+                    score_differential=row[4],
+                    turn_count=row[5],
+                    date_played=row[6] if row[6] else None,
+                )
+            )
         return games
 
     async def get_matchup_stats(
-        self,
-        player_faction: str,
-        opponent_faction: str
-    ) -> Optional[FactionStatistics]:
+        self, player_faction: str, opponent_faction: str
+    ) -> FactionStatistics | None:
         """
         Get win/loss statistics for a matchup.
-        
+
         Returns:
             FactionStatistics Pydantic model or None if no data.
         """
         if not self._conn:
             raise RuntimeError("Database not connected")
 
-        result = self._conn.execute("""
+        result = self._conn.execute(
+            """
             SELECT * FROM faction_stats
             WHERE player_faction = ? AND opponent_faction = ?
-        """, [player_faction, opponent_faction])
+        """,
+            [player_faction, opponent_faction],
+        )
 
         row = result.fetchone()
         if row:
@@ -260,11 +262,11 @@ class OpeningBookDB:
                 opponent_faction=row[1],
                 total_games=row[2],
                 wins=row[3],
-                losses=row[4]
+                losses=row[4],
             )
         return None
 
-    def __enter__(self) -> "OpeningBookDB":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args) -> None:

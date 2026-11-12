@@ -1,3 +1,5 @@
+> **Historical document.** This six-week schedule was written in February 2026. The foundation milestone shipped; nothing after it did. See the README for what exists.
+
 # Primordia AI Roadmap
 
 > **Vision**: The Stockfish of Warhammer — deterministic tactical engine  
@@ -8,7 +10,7 @@
 
 ## 📅 6-Week Schedule (Feb 4 - Mar 17, 2026)
 
-> **GitHub Project**: https://github.com/orgs/vindicta-platform/projects/4  
+> **GitHub Project**: https://github.com/vindicta-platform  
 > **Master Roadmap**: https://github.com/vindicta-platform/.github/blob/master/ROADMAP.md
 
 ### Week 1: Feb 4-10 — Heuristic Evaluation

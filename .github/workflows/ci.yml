@@ -2,23 +2,21 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'LICENSE'
-      - '.gitignore'
+    branches: [main]
   pull_request:
-    branches: [main, master]
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - 'LICENSE'
-      - '.gitignore'
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   ci:
-    uses: vindicta-platform/.github/.github/workflows/ci-python-template.yml@main
+    uses: vindicta-platform/.github/.github/workflows/ci-python-template.yml@461885a5f217f1ed82f3e1002724f8c1c6b74201 # main
     permissions:
       contents: read
       pull-requests: write

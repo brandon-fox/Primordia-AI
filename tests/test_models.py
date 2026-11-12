@@ -210,3 +210,65 @@ class TestMoveRecommendation:
         
         assert rec.score == 0.8
         assert rec.confidence == 0.9
+
+class TestOpeningBookStub:
+    """Tests for OpeningBook stub and additional model methods."""
+
+    @pytest.mark.asyncio
+    async def test_opening_book_methods(self):
+        from primordia.opening_book import FactionStatistics as BookFactionStats, HistoricalGame, OpeningBook
+
+        book = OpeningBook()
+        setup = await book.get_book_setup("Space Marines", "hash1", "Orks")
+        assert setup is not None
+        assert setup.name == "Standard Deployment"
+
+        games = await book.get_historical_games("Space Marines", "hash1", "Orks", limit=5)
+        assert games == []
+
+        state = GameState()
+        await book.index_game(state, winner=1)
+
+        hg = HistoricalGame(
+            id="g1",
+            player1_faction="SM",
+            player2_faction="Orks",
+            winner=1,
+            player1_list_hash="h1",
+            player2_list_hash="h2",
+        )
+        assert hg.winner == 1
+
+        stats = BookFactionStats(
+            player_faction="SM",
+            opponent_faction="Orks",
+            total_games=2,
+            wins=1,
+            losses=1,
+            win_rate=0.5,
+        )
+        assert stats.win_rate == 0.5
+
+    def test_evaluation_branches_and_active_units(self):
+        u1 = Unit(name="U1", faction="F1", wounds_current=5, wounds_max=5, models_current=1, models_max=1)
+        u2 = Unit(name="U2", faction="F2", wounds_current=0, wounds_max=5, models_current=0, models_max=1, status=UnitStatus.DESTROYED)
+        state = GameState(player1_units=[u1], player2_units=[u2])
+        assert len(state.active_units) == 1
+
+        ev_win = PositionEvaluation(overall_score=0.4)
+        assert ev_win.is_winning()
+        assert not ev_win.is_losing()
+        assert "significant" in ev_win.explain()
+
+        ev_slight_p1 = PositionEvaluation(player_advantage=0.2)
+        assert "slight advantage" in ev_slight_p1.explain()
+
+        ev_loss = PositionEvaluation(overall_score=-0.4)
+        assert ev_loss.is_losing()
+        assert "Player 2 has a significant advantage" in ev_loss.explain()
+
+        ev_slight_p2 = PositionEvaluation(player_advantage=-0.2)
+        assert "Player 2 has a slight advantage" in ev_slight_p2.explain()
+
+        ev_eq = PositionEvaluation(overall_score=0.0)
+        assert "roughly equal" in ev_eq.explain()
